@@ -1,4 +1,4 @@
-package net.dfl.statsdownloder.struct;
+package net.dfl.statsdownloder.model.struct;
 
 import java.util.List;
 
