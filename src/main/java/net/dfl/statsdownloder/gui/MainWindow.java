@@ -2,6 +2,7 @@ package net.dfl.statsdownloder.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -123,23 +124,34 @@ public class MainWindow implements Observer {
 	}
 	
 	public void update(Observable obs, Object obj) {
-		
 		int i = 0;
 		
 		if(obj != null) {
 			for(Fixture game : ((Round)obj).getGames()) {
 				games.get(i).setText(game.getHomeTeam() + " v " + game.getAwayTeam());
 				i++;
+				getStatsBtn.setEnabled(true);
 			}
+		} else {
+			getStatsBtn.setEnabled(false);
 		}
 	}
 	
 	public void updateFixtures(Round round) {
-				
 		int i = 0;
 		for(Fixture game : round.getGames()) {
 			games.get(i).setText(game.getHomeTeam() + " v " + game.getAwayTeam());
 			i++;
+		}
+	}
+	
+	public void toggleWorkingCurser(boolean working) {
+		if(working) {
+			Cursor waitCursoir = new Cursor(Cursor.WAIT_CURSOR);
+			mainWindow.setCursor(waitCursoir);
+		} else {
+			Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
+			mainWindow.setCursor(defaultCursor);
 		}
 	}
 	

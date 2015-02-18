@@ -9,6 +9,7 @@ public class PlayerStats {
 	private String marks;
 	private String hitouts;
 	private String freesFor;
+	private String freesAgainst;
 	private String tackles;
 	private String goals;
 	private String behinds;
@@ -33,6 +34,9 @@ public class PlayerStats {
 	}
 	public String getFreesFor() {
 		return freesFor;
+	}
+	public String getFreesAgainst() {
+		return freesAgainst;
 	}
 	public String getTackles() {
 		return tackles;
@@ -63,6 +67,9 @@ public class PlayerStats {
 	}
 	public void setFreesFor(String freesFor) {
 		this.freesFor = freesFor;
+	}
+	public void setFreesAgainst(String freesAgainst) {
+		this.freesAgainst = freesAgainst;
 	}
 	public void setTackles(String tackles) {
 		this.tackles = tackles;

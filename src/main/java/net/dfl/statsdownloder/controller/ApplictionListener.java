@@ -21,7 +21,13 @@ public class ApplictionListener implements ActionListener {
 				ex.printStackTrace();
 			}
 		} else if(action.equals("Get Stats")) {
-			handler.getStats();
+			gui.toggleWorkingCurser(true);
+			try {
+				handler.getStats();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			gui.toggleWorkingCurser(false);
 		}
 	}
 	
