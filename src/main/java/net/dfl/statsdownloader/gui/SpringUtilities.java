@@ -31,7 +31,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */ 
 
-package net.dfl.statsdownloder.gui;
+package net.dfl.statsdownloader.gui;
 
 import javax.swing.*;
 import javax.swing.SpringLayout;

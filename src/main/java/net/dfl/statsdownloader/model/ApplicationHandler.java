@@ -1,8 +1,8 @@
-package net.dfl.statsdownloder.model;
+package net.dfl.statsdownloader.model;
 
 import java.util.Observable;
 
-import net.dfl.statsdownloder.model.struct.Round;
+import net.dfl.statsdownloader.model.struct.Round;
 
 public class ApplicationHandler extends Observable {
 	
@@ -32,6 +32,13 @@ public class ApplicationHandler extends Observable {
 	public void getStats() throws Exception {
 		StatsHandler handler = new StatsHandler(this.year, this.roundNo);
 		handler.execute(this.round);
+	}
+	
+	public void saveSettings(String proxyYesNo, String proxyHost, String proxyPort, String proxyUser, String proxyPass, String outputDir) throws Exception {
+		SettingsHandler handler = new SettingsHandler();
+		handler.execute(proxyYesNo, proxyHost, proxyPort, proxyUser, proxyPass, outputDir);
+		setChanged();
+		notifyObservers("SettingsSaved");
 	}
 
 }

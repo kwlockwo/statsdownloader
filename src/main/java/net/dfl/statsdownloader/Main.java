@@ -1,4 +1,4 @@
-package net.dfl.statsdownloder;
+package net.dfl.statsdownloader;
 
 public class Main {
 

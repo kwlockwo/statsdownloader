@@ -1,4 +1,4 @@
-package net.dfl.statsdownloder.gui;
+package net.dfl.statsdownloader.gui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -7,8 +7,6 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -17,7 +15,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -27,16 +24,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.jsoup.nodes.Element;
-
-import net.dfl.statsdownloder.model.struct.Fixture;
-import net.dfl.statsdownloder.model.struct.Round;
+import net.dfl.statsdownloader.model.struct.Fixture;
+import net.dfl.statsdownloader.model.struct.Round;
 import net.miginfocom.swing.MigLayout;
 
 public class MainWindow implements Observer, ActionListener {
@@ -50,17 +44,17 @@ public class MainWindow implements Observer, ActionListener {
 	private JTextField yearInputTxt;
 	private JTextField roundInputTxt;
 	
-	private JTextField httpProxyHostTxt;
-	private JTextField httpProxyPortTxt;
-	private JTextField httpProxyUserTxt;
-	private JPasswordField httpProxyPassTxt;
+	public JTextField httpProxyHostTxt;
+	public JTextField httpProxyPortTxt;
+	public JTextField httpProxyUserTxt;
+	public JPasswordField httpProxyPassTxt;
 	
-	private JTextField outputDirTxt;
+	public JTextField outputDirTxt;
 	private JButton openDirBtn;
 	
 	private JFileChooser fileChooser;
 	
-	private JComboBox<String> proxyYesNoBox;
+	public JComboBox<String> proxyYesNoBox;
 	
 	private JButton okBtn;
 	private JButton cancelBtn;
@@ -285,10 +279,17 @@ public class MainWindow implements Observer, ActionListener {
 		int i = 0;
 		
 		if(obj != null) {
-			for(Fixture game : ((Round)obj).getGames()) {
-				games.get(i).setText(game.getHomeTeam() + " v " + game.getAwayTeam());
-				i++;
-				getStatsBtn.setEnabled(true);
+			if(obj instanceof Round) {
+				for(Fixture game : ((Round)obj).getGames()) {
+					games.get(i).setText(game.getHomeTeam() + " v " + game.getAwayTeam());
+					i++;
+					getStatsBtn.setEnabled(true);
+				}
+			} else if (obj instanceof String) {
+				if(((String)obj).equals("SettingsSaved")) {
+					CardLayout cards = (CardLayout)mainWindow.getContentPane().getLayout();
+					cards.show(mainWindow.getContentPane(), "MAINPANEL");
+				}
 			}
 		} else {
 			getStatsBtn.setEnabled(false);
@@ -324,7 +325,7 @@ public class MainWindow implements Observer, ActionListener {
 	public JTextField getRoundInputTxt() {
 		return roundInputTxt;
 	}
-
+	
 	public void setRoundInputTxt(JTextField roundInputTxt) {
 		this.roundInputTxt = roundInputTxt;
 	}
@@ -337,6 +338,10 @@ public class MainWindow implements Observer, ActionListener {
 		getStatsBtn.addActionListener(listener);
 	}
 	
+	public void addSettingsHandler(ActionListener listener) {
+		okBtn.addActionListener(listener);
+	}
+	
 	public static class CloseListener extends WindowAdapter {
 		public void windowClosing(WindowEvent e) {
 			e.getWindow().setVisible(false);
@@ -344,15 +349,12 @@ public class MainWindow implements Observer, ActionListener {
 		} //windowClosing()
 	} //CloseListene
 
-	public void actionPerformed(ActionEvent action) {
-		
-		String test = action.getActionCommand();
-		
+	public void actionPerformed(ActionEvent action) {		
 		if(action.getActionCommand().equals("Settings")) {
 			CardLayout cards = (CardLayout)mainWindow.getContentPane().getLayout();
 			cards.show(mainWindow.getContentPane(), "SETTINGS");
 		}
-		if(action.getActionCommand().equals("OK")||action.getActionCommand().equals("Cancel")) {
+		if(action.getActionCommand().equals("Cancel")) {
 			CardLayout cards = (CardLayout)mainWindow.getContentPane().getLayout();
 			cards.show(mainWindow.getContentPane(), "MAINPANEL");
 		}
@@ -364,7 +366,7 @@ public class MainWindow implements Observer, ActionListener {
             }
 		}
 		if(action.getActionCommand().equals("proxyYesNoBox")) {
-			JComboBox cb = (JComboBox)action.getSource();
+			JComboBox<?> cb = (JComboBox<?>)action.getSource();
 	        String yesNo = (String)cb.getSelectedItem();
 			
 	        if(yesNo.equals("Yes")) {

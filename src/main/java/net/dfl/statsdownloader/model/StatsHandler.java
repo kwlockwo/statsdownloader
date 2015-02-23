@@ -1,4 +1,4 @@
-package net.dfl.statsdownloder.model;
+package net.dfl.statsdownloader.model;
 
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -16,16 +16,18 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import net.dfl.statsdownloder.model.struct.Fixture;
-import net.dfl.statsdownloder.model.struct.PlayerStats;
-import net.dfl.statsdownloder.model.struct.Round;
-import net.dfl.statsdownloder.model.struct.RoundStats;
-import net.dfl.statsdownloder.model.struct.TeamStats;
+import net.dfl.statsdownloader.model.struct.Fixture;
+import net.dfl.statsdownloader.model.struct.PlayerStats;
+import net.dfl.statsdownloader.model.struct.Round;
+import net.dfl.statsdownloader.model.struct.RoundStats;
+import net.dfl.statsdownloader.model.struct.TeamStats;
 
 public class StatsHandler {
 	
 	private String year;
 	private String round;
+	
+	List<PlayerStats> leftoverPlayers;
 	
 	public StatsHandler(String year, String round) {
 		this.year = year;
@@ -36,6 +38,8 @@ public class StatsHandler {
 		
 		RoundStats roundStats = new RoundStats();
 		List<TeamStats> stats = new ArrayList<TeamStats>();
+		
+		leftoverPlayers = new ArrayList<PlayerStats>();
 		
 		String statsUri = "http://www.afl.com.au/match-centre/" + this.year + "/" + this.round + "/";
 		
@@ -52,7 +56,7 @@ public class StatsHandler {
 			TeamStats awayTeamStats = new TeamStats();
 			awayTeamStats.setTeamId(game.getAwayTeam().toLowerCase());
 			awayTeamStats.setTeamStats(getStats("a", doc));
-			
+						
 			stats.add(homeTeamStats);
 			stats.add(awayTeamStats);
 		}
@@ -142,6 +146,15 @@ public class StatsHandler {
 		rows = createCSVdata(new String[]{"syd", "SYDNEY"}, new String[]{"wce","WEST COAST"}, new String[]{"wb","WESTERN BULLDOGS"}, roundStats);
 		csvFileWr.writeAll(rows);
 		
+		csvFileWr.writeNext(blankline);
+		csvFileWr.writeNext(blankline);
+		csvFileWr.writeNext(blankline);
+		csvFileWr.writeNext(blankline);
+		
+		rows = createLeftoverCSVdata();
+		
+		csvFileWr.writeAll(rows);
+		
 		csvFileWr.flush();
 		csvFileWr.close();
 	}
@@ -185,26 +198,57 @@ public class StatsHandler {
 			
 			if(lastFound >= 0) {
 				int i = 1;
+				
+
 				for(PlayerStats playerStats : teamStats.getTeamStats()) {
-					String[] row = rows.get(i);
-					
-					row[(lastFound*14)+1] = playerStats.getName();
-					row[(lastFound*14)+2] = playerStats.getKicks();
-					row[(lastFound*14)+3] = playerStats.getHandballs();
-					row[(lastFound*14)+4] = playerStats.getDisposals();
-					row[(lastFound*14)+5] = playerStats.getMarks();
-					row[(lastFound*14)+6] = playerStats.getHitouts();
-					row[(lastFound*14)+7] = playerStats.getFreesFor();
-					row[(lastFound*14)+8] = playerStats.getFreesAgainst();
-					row[(lastFound*14)+9] = playerStats.getTackles();
-					row[(lastFound*14)+10] = playerStats.getGoals();
-					row[(lastFound*14)+11] = playerStats.getBehinds();
-					
-					rows.set(i, row);
+					if(i <= 22) {
+						String[] row = rows.get(i);
+						
+						row[(lastFound*14)+1] = playerStats.getName();
+						row[(lastFound*14)+2] = playerStats.getKicks();
+						row[(lastFound*14)+3] = playerStats.getHandballs();
+						row[(lastFound*14)+4] = playerStats.getDisposals();
+						row[(lastFound*14)+5] = playerStats.getMarks();
+						row[(lastFound*14)+6] = playerStats.getHitouts();
+						row[(lastFound*14)+7] = playerStats.getFreesFor();
+						row[(lastFound*14)+8] = playerStats.getFreesAgainst();
+						row[(lastFound*14)+9] = playerStats.getTackles();
+						row[(lastFound*14)+10] = playerStats.getGoals();
+						row[(lastFound*14)+11] = playerStats.getBehinds();
+						
+						rows.set(i, row);
+					} else {
+						leftoverPlayers.add(playerStats);
+					}
 					
 					i++;
 				}
 			}
+		}
+		
+		return rows;
+	}
+	
+	private List<String[]> createLeftoverCSVdata() {
+		
+		List<String[]> rows = new ArrayList<String[]>();
+		
+		for(PlayerStats playerStats : leftoverPlayers) {
+			String[] row = new String[11];
+			
+			row[0] = playerStats.getName();
+			row[1] = playerStats.getKicks();
+			row[2] = playerStats.getHandballs();
+			row[3] = playerStats.getDisposals();
+			row[4] = playerStats.getMarks();
+			row[5] = playerStats.getHitouts();
+			row[6] = playerStats.getFreesFor();
+			row[7] = playerStats.getFreesAgainst();
+			row[8] = playerStats.getTackles();
+			row[9] = playerStats.getGoals();
+			row[10] = playerStats.getBehinds();
+			
+			rows.add(row);
 		}
 		
 		return rows;

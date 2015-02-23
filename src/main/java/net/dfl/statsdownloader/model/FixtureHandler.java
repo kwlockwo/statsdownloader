@@ -1,11 +1,11 @@
-package net.dfl.statsdownloder.model;
+package net.dfl.statsdownloader.model;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.dfl.statsdownloder.model.struct.Fixture;
-import net.dfl.statsdownloder.model.struct.Round;
+import net.dfl.statsdownloader.model.struct.Fixture;
+import net.dfl.statsdownloader.model.struct.Round;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,8 +14,6 @@ import org.jsoup.select.Elements;
 
 public class FixtureHandler {
 	
-	
-
 	public Round execute(String year, String roundNo) throws Exception {
 		
 		String paddedRoundNo = "";
@@ -44,5 +42,4 @@ public class FixtureHandler {
 		round.setGames(games);
 		return round;
 	}
-
 }

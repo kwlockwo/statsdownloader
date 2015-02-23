@@ -1,11 +1,11 @@
-package net.dfl.statsdownloder.controller;
+package net.dfl.statsdownloader.controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import net.dfl.statsdownloder.gui.MainWindow;
-import net.dfl.statsdownloder.model.ApplicationHandler;
-import net.dfl.statsdownloder.model.struct.Round;
+import net.dfl.statsdownloader.gui.MainWindow;
+import net.dfl.statsdownloader.model.ApplicationHandler;
+import net.dfl.statsdownloader.model.struct.Round;
 
 public class ApplictionListener implements ActionListener {
 	
@@ -28,6 +28,20 @@ public class ApplictionListener implements ActionListener {
 				ex.printStackTrace();
 			}
 			gui.toggleWorkingCurser(false);
+		} else if(action.equals("OK")) {
+			String proxyYesNo = (String)gui.proxyYesNoBox.getSelectedItem();
+			String proxyHost = gui.httpProxyHostTxt.getText();
+			String proxyPort = gui.httpProxyPortTxt.getText();
+			String proxyUser = gui.httpProxyUserTxt.getText();
+			String proxyPass = new String(gui.httpProxyPassTxt.getPassword());
+			String outputDir = gui.outputDirTxt.getText();
+			
+			
+			try {
+				handler.saveSettings(proxyYesNo, proxyHost, proxyPort, proxyUser, proxyPass, outputDir);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 	

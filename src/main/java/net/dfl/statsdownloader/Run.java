@@ -1,15 +1,14 @@
-package net.dfl.statsdownloder;
+package net.dfl.statsdownloader;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.jasypt.util.text.BasicTextEncryptor;
 
-import net.dfl.statsdownloder.controller.ApplictionListener;
-import net.dfl.statsdownloder.gui.MainWindow;
-import net.dfl.statsdownloder.model.ApplicationHandler;
+import net.dfl.statsdownloader.controller.ApplictionListener;
+import net.dfl.statsdownloader.gui.MainWindow;
+import net.dfl.statsdownloader.model.ApplicationHandler;
 
 public class Run {
 	
@@ -29,6 +28,7 @@ public class Run {
 		
 		mainWindow.addFixtureHandler(listener);
 		mainWindow.addStatsHandler(listener);
+		mainWindow.addSettingsHandler(listener);
 	}
 	
 	private void loadProperties() throws Exception {
@@ -56,7 +56,7 @@ public class Run {
 			encryptor.setPassword("dfldfl123");
 			
 			try {
-				password = encryptor.decrypt(props.getProperty("proxyPassword"));
+				password = encryptor.decrypt(passwordEncrypted);
 			} catch (Exception ex) {
 				password = "";
 			}

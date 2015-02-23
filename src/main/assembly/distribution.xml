@@ -1,0 +1,30 @@
+<assembly>
+  <id>distribution</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+	  <fileSet>
+	  	<directory>${project.build.directory}</directory>
+	    <outputDirectory>/</outputDirectory>
+	    <includes>
+	    	<include>${project.artifactId}.jar</include>
+	    	<include>${project.artifactId}.exe</include>
+	    </includes>
+	  </fileSet>
+	  <fileSet>
+	  	<directory>${project.build.propertiesSourceDirectory}</directory>
+	    <outputDirectory>/</outputDirectory>
+	    <includes>
+	    	<include>config.properties</include>
+	    </includes>
+	  </fileSet>
+  </fileSets>
+  <dependencySets>
+  	<dependencySet>
+    	<outputDirectory>lib</outputDirectory>
+    	<useProjectArtifact>false</useProjectArtifact>
+      	<scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
+</assembly>

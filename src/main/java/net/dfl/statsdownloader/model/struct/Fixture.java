@@ -1,4 +1,4 @@
-package net.dfl.statsdownloder.model.struct;
+package net.dfl.statsdownloader.model.struct;
 
 public class Fixture {
 	
