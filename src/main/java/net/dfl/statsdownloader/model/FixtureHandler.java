@@ -20,6 +20,8 @@ public class FixtureHandler {
 		
 		if(roundNo.length() < 2) {
 			paddedRoundNo = "0" + roundNo;
+		} else {
+			paddedRoundNo = roundNo;
 		}
 		
 		String fixtureUrl = "http://www.afl.com.au/fixture?roundId=CD_R" + year + "014" + paddedRoundNo + "#tround";

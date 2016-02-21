@@ -45,26 +45,28 @@ public class StatsHandler {
 		
 		for(Fixture game : round.getGames()) {
 			
-			String gameStr = game.getHomeTeam().toLowerCase() + "-v-" + game.getAwayTeam().toLowerCase();
-			String statsUrl = statsUri + gameStr;
-			Document doc = Jsoup.parse(new URL(statsUrl).openStream(), "UTF-8", statsUrl);
+			try {
+				String gameStr = game.getHomeTeam().toLowerCase() + "-v-" + game.getAwayTeam().toLowerCase();
+				String statsUrl = statsUri + gameStr;
+				Document doc = Jsoup.parse(new URL(statsUrl).openStream(), "UTF-8", statsUrl);
 			
-			TeamStats homeTeamStats = new TeamStats();
-			homeTeamStats.setTeamId(game.getHomeTeam().toLowerCase());
-			homeTeamStats.setTeamStats(getStats("h", doc));
-			
-			TeamStats awayTeamStats = new TeamStats();
-			awayTeamStats.setTeamId(game.getAwayTeam().toLowerCase());
-			awayTeamStats.setTeamStats(getStats("a", doc));
-						
-			stats.add(homeTeamStats);
-			stats.add(awayTeamStats);
+				TeamStats homeTeamStats = new TeamStats();
+				homeTeamStats.setTeamId(game.getHomeTeam().toLowerCase());
+				homeTeamStats.setTeamStats(getStats("h", doc));
+				
+				TeamStats awayTeamStats = new TeamStats();
+				awayTeamStats.setTeamId(game.getAwayTeam().toLowerCase());
+				awayTeamStats.setTeamStats(getStats("a", doc));
+							
+				stats.add(homeTeamStats);
+				stats.add(awayTeamStats);
+			} catch (Exception e) {} finally {} //ignore errors
 		}
 		
 		roundStats.setRoundStats(stats);
 		
-		writeStatsCsv(roundStats);
-		
+		//writeStatsCsv(roundStats);
+		writeRobStatsCsv(roundStats);
 	}
 	
 	private List<PlayerStats> getStats(String homeORaway, Document doc) throws Exception {
@@ -84,9 +86,10 @@ public class StatsHandler {
 			Elements stats = pStatRec.getElementsByTag("td");
 			String utfName = stats.get(0).getElementsByClass("full-name").get(0).text();
 			//String isoName = new String(utfName.getBytes("UTF-8"), Charset.forName("ISO-8859-1"));
-
+			String name = new String(utfName.getBytes("UTF-8")).replaceAll("\\s+", " ").trim().replaceAll("[^\\u0000-\\u007f]+", " ").trim();
+			
 			//playerStats.setName(isoName.replaceAll(" ", " "));
-			playerStats.setName(utfName);
+			playerStats.setName(name);
 
 			playerStats.setKicks(stats.get(2).text());
 			playerStats.setHandballs(stats.get(3).text());
@@ -102,6 +105,41 @@ public class StatsHandler {
 		}
 		
 		return teamStats;
+	}
+	
+	private void writeRobStatsCsv(RoundStats roundStats) throws Exception {
+		Path dir = Paths.get("stats");
+		
+		String roundPadded = "";
+		
+		if(this.round.length() < 2) {
+			roundPadded = "0" + this.round;
+		} else {
+			roundPadded = this.round;
+		}
+		
+		Path csvFile = dir.resolve("stats-" + this.year + "-" + roundPadded + ".csv");
+		Files.createDirectories(dir);
+		CSVWriter csvFileWr = new CSVWriter(Files.newBufferedWriter(csvFile, Charset.forName("Cp1252"), new OpenOption[] {StandardOpenOption.CREATE, StandardOpenOption.WRITE}));
+		
+		List<String[]> rows = new ArrayList<String[]>();
+		
+		for(TeamStats teamStats : roundStats.getRoundStats()) {
+			for(PlayerStats playerStats : teamStats.getTeamStats()) {
+				rows.add(new String[]{playerStats.getName(),
+									  playerStats.getDisposals(), 
+									  playerStats.getMarks(),  
+									  playerStats.getHitouts(), 
+									  playerStats.getFreesFor(), 
+									  playerStats.getFreesAgainst(),
+									  playerStats.getTackles(),
+									  playerStats.getGoals()});
+			}
+		}
+		
+		csvFileWr.writeAll(rows);
+		csvFileWr.flush();
+		csvFileWr.close();
 	}
 	
 	private void writeStatsCsv(RoundStats roundStats) throws Exception {

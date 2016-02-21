@@ -280,6 +280,10 @@ public class MainWindow implements Observer, ActionListener {
 		
 		if(obj != null) {
 			if(obj instanceof Round) {
+				for(JLabel l : games) {
+					l.setText("");
+				}
+				
 				for(Fixture game : ((Round)obj).getGames()) {
 					games.get(i).setText(game.getHomeTeam() + " v " + game.getAwayTeam());
 					i++;
@@ -298,6 +302,11 @@ public class MainWindow implements Observer, ActionListener {
 	
 	public void updateFixtures(Round round) {
 		int i = 0;
+		
+		for(JLabel l : games) {
+			l.setText("");
+		}
+		
 		for(Fixture game : round.getGames()) {
 			games.get(i).setText(game.getHomeTeam() + " v " + game.getAwayTeam());
 			i++;
