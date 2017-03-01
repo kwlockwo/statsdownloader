@@ -19,4 +19,9 @@ public class TeamStats {
 	public void setTeamStats(List<PlayerStats> teamStats) {
 		this.teamStats = teamStats;
 	}
+	@Override
+	public String toString() {
+		return "TeamStats [teamId=" + teamId + ", teamStats=" + teamStats + "]";
+	}
+	
 }

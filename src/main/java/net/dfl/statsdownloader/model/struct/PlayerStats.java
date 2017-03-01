@@ -80,4 +80,10 @@ public class PlayerStats {
 	public void setBehinds(String behinds) {
 		this.behinds = behinds;
 	}
+	@Override
+	public String toString() {
+		return "PlayerStats [name=" + name + ", kicks=" + kicks + ", handballs=" + handballs + ", disposals="
+				+ disposals + ", marks=" + marks + ", hitouts=" + hitouts + ", freesFor=" + freesFor + ", freesAgainst="
+				+ freesAgainst + ", tackles=" + tackles + ", goals=" + goals + ", behinds=" + behinds + "]";
+	}
 }

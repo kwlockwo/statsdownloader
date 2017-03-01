@@ -1,6 +1,5 @@
 package net.dfl.statsdownloader.model;
 
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
@@ -9,13 +8,15 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import ch.qos.logback.classic.Logger;
 import net.dfl.statsdownloader.model.struct.Fixture;
 import net.dfl.statsdownloader.model.struct.PlayerStats;
 import net.dfl.statsdownloader.model.struct.Round;
@@ -24,88 +25,117 @@ import net.dfl.statsdownloader.model.struct.TeamStats;
 
 public class StatsHandler {
 	
+	Logger logger = (Logger) LoggerFactory.getLogger("statsDownloaderLogger");
+	
 	private String year;
 	private String round;
 	
-	List<PlayerStats> leftoverPlayers;
+	//List<PlayerStats> leftoverPlayers;
 	
 	public StatsHandler(String year, String round) {
+
 		this.year = year;
 		this.round = round;
 	}
 	
 	public void execute(Round round) throws Exception {
 		
+		logger.info("Handling Stats Download for: year={}, round={}", year, this.round);
+		
 		RoundStats roundStats = new RoundStats();
 		List<TeamStats> stats = new ArrayList<TeamStats>();
 		
-		leftoverPlayers = new ArrayList<PlayerStats>();
+		//leftoverPlayers = new ArrayList<PlayerStats>();
 		
 		String statsUri = "http://www.afl.com.au/match-centre/" + this.year + "/" + this.round + "/";
+				
+		ExecutorService executor = Executors.newFixedThreadPool(10);
+		List<Future<List<TeamStats>>> futures = new ArrayList<>();
 		
 		for(Fixture game : round.getGames()) {
 			
 			try {
 				String gameStr = game.getHomeTeam().toLowerCase() + "-v-" + game.getAwayTeam().toLowerCase();
 				String statsUrl = statsUri + gameStr;
-				Document doc = Jsoup.parse(new URL(statsUrl).openStream(), "UTF-8", statsUrl);
-			
-				TeamStats homeTeamStats = new TeamStats();
-				homeTeamStats.setTeamId(game.getHomeTeam().toLowerCase());
-				homeTeamStats.setTeamStats(getStats("h", doc));
 				
-				TeamStats awayTeamStats = new TeamStats();
-				awayTeamStats.setTeamId(game.getAwayTeam().toLowerCase());
-				awayTeamStats.setTeamStats(getStats("a", doc));
-							
-				stats.add(homeTeamStats);
-				stats.add(awayTeamStats);
-			} catch (Exception e) {} finally {} //ignore errors
+				logger.info("Stats URL: {}", statsUrl);
+				
+				if(System.getProperty("app.debug").equals("Y")) {
+					logger.debug("Creating Thread");
+				}
+				Callable<List<TeamStats>> callable = new StatsCallable(statsUrl, game.getHomeTeam().toLowerCase(), game.getHomeTeam().toLowerCase());
+				
+				if(System.getProperty("app.debug").equals("Y")) {
+					logger.debug("Executing Thread Thread");
+				}
+				Future<List<TeamStats>> future = executor.submit(callable);
+				futures.add(future);
+				
+			} catch (Exception ex) {
+				logger.error("Error: ", ex);
+			} finally {} //ignore errors
+		}
+		
+		logger.info("Saving stats");
+		for(Future<List<TeamStats>> future : futures) {
+			stats.addAll(future.get());
+			if(System.getProperty("app.debug").equals("Y")) {
+				logger.debug("Stats from tread: {}", future.get());
+			}
 		}
 		
 		roundStats.setRoundStats(stats);
-		
-		//writeStatsCsv(roundStats);
-		writeRobStatsCsv(roundStats);
-	}
-	
-	private List<PlayerStats> getStats(String homeORaway, Document doc) throws Exception {
-		
-		Element teamStatsTable;
-		List<PlayerStats> teamStats = new ArrayList<PlayerStats>();
-		
-		if(homeORaway.equals("h")) {
-			teamStatsTable = doc.getElementById("homeTeam-advanced").getElementsByTag("tbody").get(0);
-		} else {
-			teamStatsTable = doc.getElementById("awayTeam-advanced").getElementsByTag("tbody").get(0);
+		if(System.getProperty("app.debug").equals("Y")) {
+			logger.debug("Round stats: {}", roundStats);
 		}
 		
-		Elements teamStatsRecs = teamStatsTable.getElementsByTag("tr");
-		for(Element pStatRec : teamStatsRecs) {
-			PlayerStats playerStats = new PlayerStats();
-			Elements stats = pStatRec.getElementsByTag("td");
-			String utfName = stats.get(0).getElementsByClass("full-name").get(0).text();
-			//String isoName = new String(utfName.getBytes("UTF-8"), Charset.forName("ISO-8859-1"));
-			String name = new String(utfName.getBytes("UTF-8")).replaceAll("\\s+", " ").trim().replaceAll("[^\\u0000-\\u007f]+", " ").trim();
-			
-			//playerStats.setName(isoName.replaceAll(" ", " "));
-			playerStats.setName(name);
+		
+		//writeStatsCsv(roundStats);
+		
+		logger.info("Writing CSV");
+		writeRobStatsCsv(roundStats);
+		
+		logger.info("Stats Download Handler Completed");
+	}
+	
+	/*
+	private List<PlayerStats> getStats(String homeORaway, WebDriver driver) throws Exception {
+		
+		List<PlayerStats> teamStats = new ArrayList<PlayerStats>();
+		
+		driver.findElement(By.cssSelector("a[href='#full-time-stats']")).click();
+		driver.findElement(By.cssSelector("a[href='#advanced-stats']")).click();
 
-			playerStats.setKicks(stats.get(2).text());
-			playerStats.setHandballs(stats.get(3).text());
-			playerStats.setDisposals(stats.get(4).text());
-			playerStats.setMarks(stats.get(9).text());
-			playerStats.setHitouts(stats.get(12).text());
-			playerStats.setFreesFor(stats.get(17).text());
-			playerStats.setFreesAgainst(stats.get(18).text());
-			playerStats.setTackles(stats.get(19).text());
-			playerStats.setGoals(stats.get(23).text());
-			playerStats.setBehinds(stats.get(24).text());
+		List<WebElement> statsRecs;
+		
+		if(homeORaway.equals("h")) {
+			statsRecs = driver.findElement(By.id("homeTeam-advanced")).findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
+		} else {
+			statsRecs = driver.findElement(By.id("awayTeam-advanced")).findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
+		}
+		
+		for(WebElement statsRec : statsRecs) {
+			PlayerStats playerStats = new PlayerStats();
+			
+			List<WebElement> stats = statsRec.findElements(By.tagName("td"));
+
+			playerStats.setName(stats.get(0).findElements(By.tagName("span")).get(1).getText());
+			playerStats.setKicks(stats.get(2).getText());
+			playerStats.setHandballs(stats.get(3).getText());
+			playerStats.setDisposals(stats.get(4).getText());
+			playerStats.setMarks(stats.get(9).getText());
+			playerStats.setHitouts(stats.get(12).getText());
+			playerStats.setFreesFor(stats.get(17).getText());
+			playerStats.setFreesAgainst(stats.get(18).getText());
+			playerStats.setTackles(stats.get(19).getText());
+			playerStats.setGoals(stats.get(23).getText());
+			playerStats.setBehinds(stats.get(24).getText());
 			teamStats.add(playerStats);
 		}
 		
 		return teamStats;
 	}
+	*/
 	
 	private void writeRobStatsCsv(RoundStats roundStats) throws Exception {
 		Path dir = Paths.get("stats");
@@ -119,13 +149,25 @@ public class StatsHandler {
 		}
 		
 		Path csvFile = dir.resolve("stats-" + this.year + "-" + roundPadded + ".csv");
+		
+		logger.info("CSV File: {}", dir + "/" + csvFile);
+		
 		Files.createDirectories(dir);
 		CSVWriter csvFileWr = new CSVWriter(Files.newBufferedWriter(csvFile, Charset.forName("Cp1252"), new OpenOption[] {StandardOpenOption.CREATE, StandardOpenOption.WRITE}));
 		
 		List<String[]> rows = new ArrayList<String[]>();
 		
+		if(System.getProperty("app.debug").equals("Y")) {
+			logger.debug("Round stats to be written: {}", roundStats);
+		}
+		
 		for(TeamStats teamStats : roundStats.getRoundStats()) {
 			for(PlayerStats playerStats : teamStats.getTeamStats()) {
+				
+				if(System.getProperty("app.debug").equals("Y")) {
+					logger.debug("Player to be written: {}", playerStats);
+				}		
+				
 				rows.add(new String[]{playerStats.getName(),
 									  playerStats.getDisposals(), 
 									  playerStats.getMarks(),  
@@ -134,14 +176,20 @@ public class StatsHandler {
 									  playerStats.getFreesAgainst(),
 									  playerStats.getTackles(),
 									  playerStats.getGoals()});
+				
+				if(System.getProperty("app.debug").equals("Y")) {
+					logger.debug("CSV Row: {}", (Object[])rows.get(rows.size()-1));
+				}
 			}
 		}
 		
 		csvFileWr.writeAll(rows);
 		csvFileWr.flush();
 		csvFileWr.close();
+		logger.info("CSV File written");
 	}
 	
+	/*
 	private void writeStatsCsv(RoundStats roundStats) throws Exception {
 
 		Path dir = Paths.get("stats");
@@ -196,6 +244,7 @@ public class StatsHandler {
 		csvFileWr.flush();
 		csvFileWr.close();
 	}
+	
 	
 	private List<String[]> createCSVdata(String[] team1, String[] team2, String[] team3, RoundStats roundStats) {
 		
@@ -291,4 +340,5 @@ public class StatsHandler {
 		
 		return rows;
 	}
+	*/
 }

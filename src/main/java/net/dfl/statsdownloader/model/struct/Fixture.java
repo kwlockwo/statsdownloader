@@ -17,4 +17,8 @@ public class Fixture {
 	public void setAwayTeam(String awayTeam) {
 		this.awayTeam = awayTeam;
 	}
+	@Override
+	public String toString() {
+		return "Fixture [homeTeam=" + homeTeam + ", awayTeam=" + awayTeam + "]";
+	}
 }

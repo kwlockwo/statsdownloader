@@ -12,5 +12,11 @@ public class RoundStats {
 
 	public void setRoundStats(List<TeamStats> roundStats) {
 		this.roundStats = roundStats;
+	}
+
+	@Override
+	public String toString() {
+		return "RoundStats [roundStats=" + roundStats + "]";
 	}	
+	
 }

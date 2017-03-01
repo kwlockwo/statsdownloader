@@ -35,10 +35,11 @@ public class ApplictionListener implements ActionListener {
 			String proxyUser = gui.httpProxyUserTxt.getText();
 			String proxyPass = new String(gui.httpProxyPassTxt.getPassword());
 			String outputDir = gui.outputDirTxt.getText();
+			String debugYesNo = (String)gui.debugYesNoBox.getSelectedItem();
 			
 			
 			try {
-				handler.saveSettings(proxyYesNo, proxyHost, proxyPort, proxyUser, proxyPass, outputDir);
+				handler.saveSettings(proxyYesNo, proxyHost, proxyPort, proxyUser, proxyPass, outputDir, debugYesNo);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
