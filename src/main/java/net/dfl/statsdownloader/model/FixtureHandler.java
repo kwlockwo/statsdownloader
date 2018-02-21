@@ -1,20 +1,24 @@
 package net.dfl.statsdownloader.model;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
+import io.github.bonigarcia.wdm.PhantomJsDriverManager;
 import net.dfl.statsdownloader.model.struct.Fixture;
 import net.dfl.statsdownloader.model.struct.Round;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class FixtureHandler {
 	
 	public Round execute(String year, String roundNo) throws Exception {
+		
+		Logger logger = (Logger) LoggerFactory.getLogger("statsDownloaderLogger");
 		
 		String paddedRoundNo = "";
 		
@@ -26,22 +30,40 @@ public class FixtureHandler {
 		
 		String fixtureUrl = "http://www.afl.com.au/fixture?roundId=CD_R" + year + "014" + paddedRoundNo + "#tround";
 		
-		Document doc = Jsoup.parse(new URL(fixtureUrl).openStream(), "UTF-8", fixtureUrl);
+		PhantomJsDriverManager.getInstance().setup();
+		WebDriver driver = new PhantomJSDriver();
 		
-		Elements matches = doc.getElementById("tround").getElementsByTag("tbody").select(".team-logos");
+		logger.info("Loading fixture from: {}", fixtureUrl);
+		
+		driver.get(fixtureUrl);
+		
+		List<WebElement> webFixtures = driver.findElement(By.id("tround")).findElement(By.tagName("tbody")).findElements(By.className("team-logos"));
 		
 		Round round = new Round();
 		List<Fixture> games = new ArrayList<Fixture>();
 		
-		for(Element match : matches) {
+		for(WebElement webFixture : webFixtures) {
 			Fixture fixture = new Fixture();
-			fixture.setHomeTeam(match.select(".home").text());
-			fixture.setAwayTeam(match.select(".away").text());
+			fixture.setHomeTeam(webFixture.findElements(By.className("home")).get(0).getText());
+			fixture.setAwayTeam(webFixture.findElements(By.className("away")).get(0).getText());
+			
+			if(System.getProperty("app.debug").equals("Y")) {
+				logger.debug("Fixture: {}", fixture);
+			}
 			
 			games.add(fixture);
 		}
 		
+		driver.quit();
+		
 		round.setGames(games);
+		
+		if(System.getProperty("app.debug").equals("Y")) {
+			logger.debug("Round Games: {}", round);
+		}
+		
+		logger.info("Fixtures Loaded");
+		
 		return round;
 	}
 }

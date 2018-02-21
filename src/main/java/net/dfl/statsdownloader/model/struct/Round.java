@@ -17,4 +17,9 @@ public class Round {
 	public void addGame(Fixture fixture) {		
 		this.games.add(fixture);
 	}
+
+	@Override
+	public String toString() {
+		return "Round [games=" + games + "]";
+	}
 }

@@ -55,6 +55,7 @@ public class MainWindow implements Observer, ActionListener {
 	private JFileChooser fileChooser;
 	
 	public JComboBox<String> proxyYesNoBox;
+	public JComboBox<String> debugYesNoBox;
 	
 	private JButton okBtn;
 	private JButton cancelBtn;
@@ -67,7 +68,7 @@ public class MainWindow implements Observer, ActionListener {
 		
 		mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
 		mainWindow.setTitle("DFL Stats Downloader");
-		mainWindow.setBounds(100, 100, 300, 300);
+		mainWindow.setBounds(100, 100, 300, 325);
 		mainWindow.setResizable(false);
 		
 		Container contentPane = mainWindow.getContentPane();
@@ -146,8 +147,7 @@ public class MainWindow implements Observer, ActionListener {
 		p.add(getFixtureBtn);
 		p.add(getStatsBtn);
 		p.add(settingsBtn);
-		
-		
+				
 		//contentPane.add(p, BorderLayout.SOUTH);
 		mainPanel.add(p, BorderLayout.SOUTH);
 		
@@ -156,13 +156,23 @@ public class MainWindow implements Observer, ActionListener {
 		JPanel settingsPanel = new JPanel();
 		settingsPanel.setLayout(new BorderLayout(0, 0));
 		
+		JPanel settingsPanelInput = new JPanel();
+		settingsPanelInput.setLayout(new BorderLayout(0, 0));
+		
+		JPanel settingsPanelBtns = new JPanel();
+		settingsPanelBtns.setLayout(new BorderLayout(0, 0));
+		
+		settingsPanel.add(settingsPanelInput, BorderLayout.NORTH);
+		settingsPanel.add(settingsPanelBtns, BorderLayout.SOUTH);
+		
 		JPanel borderPanel = new JPanel();
+		borderPanel.setLayout(new BorderLayout(1,1));
 		TitledBorder title;
 		title = BorderFactory.createTitledBorder("HTTP Proxy Settings");
 		borderPanel.setBorder(title);
 		
 		p = new JPanel();
-		p.setLayout(new MigLayout());
+		p.setLayout(new MigLayout("gap rel 0", "grow"));
 		
 		final DefaultComboBoxModel<String> yesNo = new DefaultComboBoxModel<String>();
 		
@@ -228,11 +238,12 @@ public class MainWindow implements Observer, ActionListener {
 		}
 		
 		borderPanel.add(p);
-		settingsPanel.add(borderPanel, BorderLayout.NORTH);
+		settingsPanelInput.add(borderPanel, BorderLayout.NORTH);
 		
 		p = new JPanel();		
 
 		borderPanel = new JPanel();
+		borderPanel.setLayout(new BorderLayout(0,0));
 		title = BorderFactory.createTitledBorder("Output Folder");
 		borderPanel.setBorder(title);
 		
@@ -252,7 +263,36 @@ public class MainWindow implements Observer, ActionListener {
 		
 		//settingsPanel.add(p, BorderLayout.NORTH);
 		borderPanel.add(p);
-		settingsPanel.add(borderPanel, BorderLayout.CENTER);
+		settingsPanelInput.add(borderPanel, BorderLayout.CENTER);
+		
+		p = new JPanel();		
+
+		borderPanel = new JPanel();
+		borderPanel.setLayout(new BorderLayout(0,0));
+		title = BorderFactory.createTitledBorder("Debug");
+		borderPanel.setBorder(title);
+		
+		final DefaultComboBoxModel<String> yesNo2 = new DefaultComboBoxModel<String>();
+		
+		yesNo2.addElement("Yes");
+		yesNo2.addElement("No");
+		
+		//String[] yesNo = {"Yes", "No"};
+		debugYesNoBox = new JComboBox<String>(yesNo2);
+		
+		if(System.getProperty("app.debug").equals("Y")) {
+			debugYesNoBox.setSelectedIndex(0);
+		} else {
+			debugYesNoBox.setSelectedIndex(1);
+		}
+				
+		l = new JLabel("Enable Debug:");
+		l.setLabelFor(debugYesNoBox);
+		p.add(l, "align label, alignx trailing");
+		p.add(debugYesNoBox, "wrap");
+				
+		borderPanel.add(p);
+		settingsPanelInput.add(borderPanel, BorderLayout.SOUTH);
 		
 		p = new JPanel();
 		
@@ -265,7 +305,7 @@ public class MainWindow implements Observer, ActionListener {
 		p.add(okBtn);
 		p.add(cancelBtn);
 		
-		settingsPanel.add(p, BorderLayout.SOUTH);
+		settingsPanelBtns.add(p, BorderLayout.CENTER);
 		
 		contentPane.add(settingsPanel, "SETTINGS");
 		

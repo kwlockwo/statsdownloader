@@ -1,3 +1,7 @@
 /target
-/target/
-/target/
+.project
+.settings
+pemfile_cached
+phantomjsdriver.log
+statsdownloader.log
+.classpath

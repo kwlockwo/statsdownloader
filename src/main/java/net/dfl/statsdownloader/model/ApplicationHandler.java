@@ -34,9 +34,9 @@ public class ApplicationHandler extends Observable {
 		handler.execute(this.round);
 	}
 	
-	public void saveSettings(String proxyYesNo, String proxyHost, String proxyPort, String proxyUser, String proxyPass, String outputDir) throws Exception {
+	public void saveSettings(String proxyYesNo, String proxyHost, String proxyPort, String proxyUser, String proxyPass, String outputDir, String debugYesNo) throws Exception {
 		SettingsHandler handler = new SettingsHandler();
-		handler.execute(proxyYesNo, proxyHost, proxyPort, proxyUser, proxyPass, outputDir);
+		handler.execute(proxyYesNo, proxyHost, proxyPort, proxyUser, proxyPass, outputDir, debugYesNo);
 		setChanged();
 		notifyObservers("SettingsSaved");
 	}
